@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Translation\Exception\NotFoundResourceException;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 function handleExceptions(Exceptions $exceptions)
 {
@@ -43,7 +44,7 @@ function handleExceptions(Exceptions $exceptions)
         return error_response($e->getMessage(), null, Response::HTTP_NOT_FOUND);
     })->renderable(function (ReservationCanceledException $e) {
         return error_response($e->getMessage(), null, Response::HTTP_CONFLICT);
-    })->renderable(function (Exception $e) {
-        return error_response($e, null, Response::HTTP_INTERNAL_SERVER_ERROR);
+    })->renderable(function (Throwable $e) {
+        return error_response($e->getMessage(), null, Response::HTTP_INTERNAL_SERVER_ERROR);
     });
 }

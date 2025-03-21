@@ -17,11 +17,11 @@ class ArenaService
         $user = Auth::user();
         if ($user->isAdmin()) {
             $admin = Admin::find($user->id);
-            
-            return $admin ? $admin->arenas : collect();
+
+            return $admin ? $admin->arenas->with('courts') : collect();
         }
 
-        return Arena::all();
+        return Arena::with(['admin', 'courts'])->get();
     }
 
     public function save(Request $request): Arena
@@ -30,7 +30,7 @@ class ArenaService
         return Arena::create($validated);
     }
 
-    public function getArenaById(string $id)
+    public function getArenaById(string $id): Arena
     {
         $arena = $this->findArenaOrFail($id);
         $this->authorizeArenaAccess($arena);
@@ -43,17 +43,16 @@ class ArenaService
         $arena = $this->findArenaOrFail($id);
         $this->authorizeArenaAccess($arena);
 
-        return $arena->courts()->get();
+        return $arena->courts()->with('timetables')->get();
     }
 
     public function updateArena(Request $request, string $id): Arena
     {
         $arena = $this->findArenaOrFail($id);
-
         $this->authorizeArenaAccess($arena);
 
         $data = $this->validateArenaData($request);
-        $arena->update($data);
+        $arena->update($data);;
 
         return $arena;
     }
