@@ -54,7 +54,10 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', env('LOG_STACK', 'single')),
+            'channels' => array_filter([
+                'daily',
+                env('APP_ENV') === 'production' ? 'slack-error' : null,
+            ]),
             'ignore_exceptions' => false,
         ],
 
@@ -73,9 +76,18 @@ return [
             'replace_placeholders' => true,
         ],
 
-        'slack' => [
+        'slack-request' => [
             'driver' => 'slack',
-            'url' => env('LOG_SLACK_WEBHOOK_URL'),
+            'url' => env('LOG_SLACK_REQUEST_WEBHOOK_URL'),
+            'username' => env('LOG_SLACK_REQUEST_USERNAME', 'Laravel Request Log'),
+            'emoji' => env('LOG_SLACK_REQUEST_EMOJI', ':boom:'),
+            'level' => env('LOG_REQUEST_LEVEL', 'critical'),
+            'replace_placeholders' => true,
+        ],
+
+        'slack-error' => [
+            'driver' => 'slack',
+            'url' => env('LOG_SLACK_ERROR_WEBHOOK_URL'),
             'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
             'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
             'level' => env('LOG_LEVEL', 'critical'),
@@ -89,7 +101,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],

@@ -18,7 +18,8 @@ class AdminService
 
     public function __construct(
         ArenaService $arenaService
-    ) {
+    )
+    {
         $this->arenaService = $arenaService;
     }
 
@@ -38,7 +39,7 @@ class AdminService
      */
     public function getAdminById(string $id): Admin
     {
-        return $this->findAdminOrFail($id);
+        return Admin::findOrFail($id);
     }
 
     /**
@@ -46,7 +47,7 @@ class AdminService
      */
     public function updateAdmin(Request $request, string $id): Admin
     {
-        $admin = $this->findAdminOrFail($id);
+        $admin = Admin::findOrFail($id);
 
         $data = $this->validateAdminData($request, $admin);
         $this->updateAdminData($admin, $data);
@@ -59,7 +60,7 @@ class AdminService
      */
     public function deleteAdmin(string $id): void
     {
-        $admin = $this->findAdminOrFail($id);
+        $admin = Admin::findOrFail($id);
         $this->deleteAdminRecord($admin);
     }
 
@@ -68,7 +69,7 @@ class AdminService
      */
     public function getArenas($adminId = null)
     {
-        $admin = $this->findAdminOrFail($adminId ?? Auth::id());
+        $admin = Admin::findOrFail($adminId ?? Auth::id());
         return $admin->arenas->all();
     }
 
@@ -95,16 +96,6 @@ class AdminService
     {
         $data['password'] = Hash::make($data['password']);
         return Admin::create($data);
-    }
-
-    private function findAdminOrFail(string $id): Admin
-    {
-        $admin = Admin::find($id);
-        if (!$admin) {
-            throw new AdminNotFoundException();
-        }
-
-        return $admin;
     }
 
     private function updateAdminData(Admin $admin, array $data): void

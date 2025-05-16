@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourtController;
 use App\Http\Controllers\CourtTimetableController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Middleware\AuthSystemMiddleware;
 use App\Http\Middleware\AuthAdminOrSystemMiddleware;
@@ -69,6 +70,11 @@ Route::prefix("/v1")->group(function () {
                 Route::post('', [ReservationController::class, 'confirmReservation'])->name('reservations.confirmReservation')->middleware(AuthAdminOrSystemMiddleware::class);
                 Route::delete('', [ReservationController::class, 'destroy'])->name('reservations.destroy');
             });
+        });
+
+        Route::prefix('/profiles')->group(function () {
+            Route::get('', [ProfileController::class, 'profile'])->name('profiles.profile');
+            Route::put('', [ProfileController::class, 'updateProfile'])->name('profiles.updateProfile');
         });
     });
 });

@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Enums\CourtTimetableStatus;
-use App\Exceptions\CourtTimetableNotFoundException;
 use App\Models\CourtTimetable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -16,9 +16,10 @@ class CourtTimetableService
     private CourtTimetable $courtTimetable;
 
     public function __construct(
-        CourtService $courtService,
+        CourtService   $courtService,
         CourtTimetable $courtTimetable
-    ) {
+    )
+    {
         $this->courtTimetable = $courtTimetable;
         $this->courtService = $courtService;
     }
@@ -31,7 +32,7 @@ class CourtTimetableService
 
     public function getCourtTimetableById(string $timetableId): CourtTimetable
     {
-        $courtTimetable = $this->findTimetableOrFail($timetableId);
+        $courtTimetable = CourtTimetable::findOrFail($timetableId);
         $this->authorizeCourtTimetableAccess($courtTimetable);
         return $courtTimetable;
     }
@@ -51,7 +52,7 @@ class CourtTimetableService
 
     public function deleteTimetable(string $timetableId): void
     {
-        $timetable = $this->findTimetableOrFail($timetableId);
+        $timetable = CourtTimetable::findOrFail($timetableId);
         $this->authorizeCourtTimetableAccess($timetable);
         $timetable->delete();
     }
@@ -86,16 +87,6 @@ class CourtTimetableService
         ];
     }
 
-    protected function findTimetableOrFail(string $id): CourtTimetable
-    {
-        $timetable = CourtTimetable::find($id);
-        if (!$timetable) {
-            throw new CourtTimetableNotFoundException();
-        }
-
-        return $timetable;
-    }
-
     public function checkConflictingTimetable($courtId, $dayOfWeek, $endTime, $startTime)
     {
         $conflictingTimetable = $this->courtTimetable->existsConflictingTimetable($courtId, $dayOfWeek, $endTime, $startTime);
@@ -113,7 +104,7 @@ class CourtTimetableService
         $user = Auth::user();
 
         if ($user->isAdmin() && $courtTimetable->court->arena->admin_id !== $user->id) {
-            throw new CourtTimetableNotFoundException();
+            throw new ModelNotFoundException(CourtTimetable::class);
         }
     }
 }

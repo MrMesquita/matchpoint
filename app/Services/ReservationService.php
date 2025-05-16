@@ -8,6 +8,7 @@ use App\Exceptions\ReservationCanceledException;
 use App\Exceptions\ReservationNotFoundException;
 use App\Models\Reservation;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\UnauthorizedException;
@@ -22,11 +23,12 @@ class ReservationService
     private CourtTimetableService $courtTimetableService;
 
     public function __construct(
-        CustomerService $customerService,
-        Reservation $reservationModel,
-        CourtService $courtService,
+        CustomerService       $customerService,
+        Reservation           $reservationModel,
+        CourtService          $courtService,
         CourtTimetableService $courtTimetableService
-    ) {
+    )
+    {
         $this->courtTimetableService = $courtTimetableService;
         $this->courtService = $courtService;
         $this->reservationModel = $reservationModel;
@@ -43,7 +45,7 @@ class ReservationService
     {
         $reservation = $this->reservationModel->getReservationById($reservation, $this->authUser);
         if (is_null($reservation)) {
-            throw new ReservationNotFoundException();
+            throw new ModelNotFoundException(Reservation::class);
         }
 
         return $reservation;

@@ -6,6 +6,7 @@ use App\Exceptions\CourtNotFoundException;
 use App\Models\Admin;
 use App\Models\Court;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -18,7 +19,8 @@ class CourtService
     public function __construct(
         ArenaService $arenaService,
         AdminService $adminService
-    ){
+    )
+    {
         $this->adminService = $adminService;
         $this->arenaService = $arenaService;
     }
@@ -42,14 +44,14 @@ class CourtService
 
     public function getCourtById(string $id): Court
     {
-        $court = $this->findCourtOrFail($id);
+        $court = Court::findOrFail($id);
         $this->authorizeCourtAccess($court);
         return $court;
     }
 
     public function updateCourt(Request $request, string $id): Court
     {
-        $court = $this->findCourtOrFail($id);
+        $court = Court::findOrFail($id);
         $this->authorizeCourtAccess($court);
         $data = $this->validateCourtData($request);
 
@@ -59,7 +61,7 @@ class CourtService
 
     public function deleteCourt(string $id): void
     {
-        $court = $this->findCourtOrFail($id);
+        $court = Court::findOrFail($id);
         $this->authorizeCourtAccess($court);
         $court->delete();
     }
@@ -104,17 +106,7 @@ class CourtService
         $user = Auth::user();
 
         if ($user->isAdmin() && $court->arena->admin_id !== $user->id) {
-            throw new CourtNotFoundException();
+            throw new ModelNotFoundException(Court::class);
         }
-    }
-
-    protected function findCourtOrFail(string $id): Court
-    {
-        $court = Court::find($id);
-        if (!$court) {
-            throw new CourtNotFoundException();
-        }
-
-        return $court;
     }
 }

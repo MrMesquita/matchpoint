@@ -26,12 +26,12 @@ class CustomerService
 
     public function getCustomerById(string $id)
     {
-        return $this->findCustomerOrFail($id);
+        return Customer::findOrFail($id);
     }
 
     public function updateCustomer(Request $request, string $id)
     {
-        $customer = $this->findCustomerOrFail($id);
+        $customer = Customer::findOrFail($id);
 
         $data = $this->validateCustomerData($request, $customer);
         $this->updateCustomerData($customer, $data);
@@ -41,7 +41,7 @@ class CustomerService
 
     public function deleteCustomer(string $id)
     {
-        $customer = $this->findCustomerOrFail($id);
+        $customer = Customer::findOrFail($id);
         $this->deleteCustomerRecord($customer);
     }
 
@@ -59,7 +59,7 @@ class CustomerService
             'name' => 'required|string|max:255',
             'surname' => 'required|string|max:255',
             'phone' => ['required', $uniquePhoneRule],
-            'email' => ['required','email',$uniqueEmailRule],
+            'email' => ['required', 'email', $uniqueEmailRule],
             'password' => 'required|string|min:6'
         ]);
     }
@@ -68,16 +68,6 @@ class CustomerService
     {
         $data['password'] = Hash::make($data['password']);
         return Customer::create($data);
-    }
-
-    private function findCustomerOrFail(string $id): Customer
-    {
-        $customer = Customer::find($id);
-        if (!$customer) {
-            throw new CustomerNotFoundException();
-        }
-
-        return $customer;
     }
 
     private function updateCustomerData(Customer $customer, array $data): void

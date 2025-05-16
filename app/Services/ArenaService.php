@@ -8,6 +8,7 @@ use App\Models\Admin;
 use App\Models\Arena;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,7 +35,7 @@ class ArenaService
 
     public function getArenaById(string $id): Arena
     {
-        $arena = $this->findArenaOrFail($id);
+        $arena = Arena::findOrFail($id);
         $this->authorizeArenaAccess($arena);
 
         return $arena;
@@ -42,7 +43,7 @@ class ArenaService
 
     public function getCourts(string $id): Collection
     {
-        $arena = $this->findArenaOrFail($id);
+        $arena = Arena::findOrFail($id);
         $this->authorizeArenaAccess($arena);
 
         return $arena->courts()->with('timetables')->get();
@@ -50,7 +51,7 @@ class ArenaService
 
     public function updateArena(Request $request, string $id): Arena
     {
-        $arena = $this->findArenaOrFail($id);
+        $arena = Arena::findOrFail($id);
         $this->authorizeArenaAccess($arena);
 
         $data = $this->validateArenaData($request);
@@ -61,7 +62,7 @@ class ArenaService
 
     public function deleteArena(string $id): void
     {
-        $arena = $this->findArenaOrFail($id);
+        $arena = Arena::findOrFail($id);
 
         $this->authorizeArenaAccess($arena);
 
@@ -87,21 +88,10 @@ class ArenaService
         if ($user->isAdmin()) {
             $validated['admin_id'] = $user->id;
         } elseif (!Admin::find($validated['admin_id'])) {
-            throw new AdminNotFoundException();
+            throw new ModelNotFoundException(Admin::class);
         }
 
         return $validated;
-    }
-
-    private function findArenaOrFail(string $id): Arena
-    {
-        $arena = Arena::find($id);
-
-        if (!$arena) {
-            throw new ArenaNotFoundException();
-        }
-
-        return $arena;
     }
 
     private function authorizeArenaAccess(Arena $arena): void
@@ -110,7 +100,7 @@ class ArenaService
         $user = Auth::user();
 
         if ($user->isAdmin() && $arena->admin_id !== $user->id) {
-            throw new ArenaNotFoundException();
+            throw new ModelNotFoundException("Arena not found");
         }
     }
 }
